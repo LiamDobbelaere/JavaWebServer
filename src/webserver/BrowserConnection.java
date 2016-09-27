@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 
 /*
@@ -59,6 +61,16 @@ public class BrowserConnection {
 			System.exit(-1);
 		}
 	}
+        
+        public boolean canRead() {
+            try {
+                return in.ready();
+            } catch (IOException ex) {
+
+            }
+            
+            return false;
+        }
 
 	public String readLine(){
 		try {

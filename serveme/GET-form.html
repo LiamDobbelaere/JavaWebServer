@@ -1,0 +1,28 @@
+<html>
+	<head>
+		<title>Form</title>
+	</head>
+	
+	<style>
+		body {
+			margin: 30px auto 30px auto;
+			width : 30%;
+		}
+		
+		input {
+			display: block;
+			width:    100%;
+		}
+	</style>
+
+	<body>
+		<fieldset><legend>GET form</legend>
+			<span>http://localhost:8080/login.php</span>
+		<form action="http://localhost:8080/login.php" method="GET" >
+			<input type="text" id="username" name="username"  value="jos"/>
+			<input type="password" id="password" name="password"  value="jos123"/>
+			<input type="submit"/>
+		</form>
+		</fieldset>
+	</body>
+</html>

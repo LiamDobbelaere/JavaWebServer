@@ -5,6 +5,7 @@
  */
 package webserver;
 
+import java.io.File;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -26,46 +27,67 @@ public class WebServer {
         while (true) {
             BrowserConnection conn = BrowserConnection.accept();
             
-            System.out.println("New incoming connection");
+            System.out.println("[INFO] New incoming connection");
             
             String line = conn.readLine();
             String firstLine = line;
-            int contentLength = 0;
+            String method = firstLine.split(" ")[0];
             
+            int lineWasEmpty = 0;
+                        
+            //String request = "";
             
-            while (line.length() != 0) {
-                System.out.println(line);
+            StringBuilder requestBuilder = new StringBuilder();
+            requestBuilder.append(line);
+            requestBuilder.append("\r\n");
+            
+            System.out.println("[INFO] Reading request...");
+            
+            while (conn.canRead() && lineWasEmpty < 1) {          
+                line = conn.readLine();
+                requestBuilder.append(line);
+                requestBuilder.append("\r\n");
                 
-                if (line.startsWith("Content-Length")) {
-                    contentLength = Integer.parseInt(line.split(":")[1].trim());
+                if (line.equals("")) lineWasEmpty += 1;
+                
+            }
+            System.out.println("[INFO] Read request.");
+
+            Request requestInfo = new Request(requestBuilder.toString());
+            
+            if (lineWasEmpty == 1 && method.equals("POST")) {                
+                char[] buffer = new char[Integer.parseInt(requestInfo.getHeader("Content-Length"))];
+                while (conn.canRead()) {
+                    conn.read(buffer);
                 }
                 
-                line = conn.readLine();
+                String postParameters = new String(buffer);
+                requestInfo.loadPOSTParameters(postParameters);
             }
+            
+            System.out.println(requestBuilder.toString());            
             
             String document = firstLine.split(" ")[1];
             
             if (document.equals("/")) document = "\\index.html";
             else document = "\\" + document.substring(1);
-            /*String body = "";
             
-            if (contentLength > 0) {
-                body = conn.readLine();
-                System.out.println("lol");
-            }
-            
-            System.out.println(body);
-            */
-            
-            System.out.println(firstLine);
-            
+
             if (document.equals("\\info.html")) {
                 DateFormat dateFormat = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
                 Date date = new Date();
 
                 conn.write(dateFormat.format(date));
-            } else conn.writeFile(DOCUMENT_ROOT + document);
-           
+            } else {
+                File file = new File(DOCUMENT_ROOT + document);
+                if (file.exists()) {
+                    conn.writeFile(DOCUMENT_ROOT + document);
+                }
+                else {
+                    conn.writeFile(DOCUMENT_ROOT + "\\error-404.html");
+                }
+            }
+                        
             conn.close();
         }
     }
